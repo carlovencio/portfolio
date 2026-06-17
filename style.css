@@ -327,14 +327,20 @@ p:last-child { margin-bottom: 0; }
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 16px 56px rgba(26,21,18,0.15);
+  position: relative;
+  padding-bottom: 62%;
+  height: 0;
 }
 
 .video-wrap iframe,
 .video-wrap video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  aspect-ratio: 16/9;
-  display: block;
+  height: 100%;
   border: none;
+  display: block;
 }
 
 .video-placeholder {
