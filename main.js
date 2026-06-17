@@ -71,12 +71,27 @@ function handleSubmit(e) {
   btn.textContent = 'Sending…';
   btn.disabled = true;
 
-  // Swap this timeout block with a real fetch() to your form endpoint when ready
-  setTimeout(() => {
-    note.textContent = 'Message sent! I\'ll get back to you soon.';
-    note.className = 'form-note success';
-    e.target.reset();
+  fetch('https://formspree.io/f/mykaadzz', {
+    method: 'POST',
+    body: new FormData(e.target),
+    headers: { 'Accept': 'application/json' }
+  })
+  .then(res => {
+    if (res.ok) {
+      note.textContent = 'Message sent! I\'ll get back to you soon.';
+      note.className = 'form-note success';
+      e.target.reset();
+    } else {
+      note.textContent = 'Something went wrong. Please email me directly.';
+      note.className = 'form-note error';
+    }
+  })
+  .catch(() => {
+    note.textContent = 'Something went wrong. Please email me directly.';
+    note.className = 'form-note error';
+  })
+  .finally(() => {
     btn.textContent = 'Send Message';
     btn.disabled = false;
-  }, 1200);
+  });
 }
