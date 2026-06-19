@@ -182,6 +182,17 @@
     footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.06); }
     .footer-copy { color: rgba(255,255,255,0.25); }
 
+    /* Dark mask that hides the blank left canvas on the cover page */
+    #book-slot { position: relative; }
+    #cover-mask {
+      position: absolute;
+      top: 0; left: 0;
+      background: #1a1512;
+      z-index: 10;
+      pointer-events: none;
+      display: none;
+    }
+
     @media (max-width: 640px) {
       .book-tab { font-size: 0.72rem; padding: 7px 14px; }
       .flip-zone { display: none; }
@@ -219,7 +230,7 @@
       <div class="flip-zone flip-zone-prev" id="zone-prev">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="13 8 9 12 13 16"/></svg>
       </div>
-      <div id="book-slot"><div id="book-el"></div></div>
+      <div id="book-slot"><div id="book-el"></div><div id="cover-mask"></div></div>
       <div class="flip-zone flip-zone-next" id="zone-next">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="11 8 15 12 11 16"/></svg>
       </div>
@@ -290,6 +301,22 @@
       document.getElementById('page-counter').textContent = `${idx + 1} / ${total}`;
     }
 
+    function syncCoverUI() {
+      const idx = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
+      const mask = document.getElementById('cover-mask');
+      if (!mask) return;
+      if (idx === 0) {
+        const canvas = document.querySelector('#book-slot .stf__canvas');
+        if (canvas) {
+          mask.style.width  = (canvas.width  / 2) + 'px';
+          mask.style.height = canvas.height + 'px';
+        }
+        mask.style.display = 'block';
+      } else {
+        mask.style.display = 'none';
+      }
+    }
+
     function loadBook(n) {
       currentBook = n;
 
@@ -297,7 +324,7 @@
 
       // Replace with a fresh element — reusing the same node after destroy() leaves residual state
       const slot = document.getElementById('book-slot');
-      slot.innerHTML = '<div id="book-el"></div>';
+      slot.innerHTML = '<div id="book-el"></div><div id="cover-mask"></div>';
       const el = document.getElementById('book-el');
 
       const { pageW, pageH, mobile } = calcSize();
@@ -319,7 +346,8 @@
       });
 
       pageFlip.loadFromImages(getImages(n));
-      pageFlip.on('flip', (e) => updateCounter(e.data));
+      pageFlip.on('init', syncCoverUI);
+      pageFlip.on('flip', (e) => { updateCounter(e.data); syncCoverUI(); });
 
       // Update UI
       document.getElementById('book-title').textContent = bookData[n].title;
