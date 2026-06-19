@@ -183,7 +183,7 @@
     .footer-copy { color: rgba(255,255,255,0.25); }
 
     /* Dark mask that hides the blank left canvas on the cover page */
-    #book-slot { position: relative; }
+    #book-slot { position: relative; transition: transform 0.7s ease; }
     #cover-mask {
       position: absolute;
       top: 0; left: 0;
@@ -301,12 +301,14 @@
       document.getElementById('page-counter').textContent = `${idx + 1} / ${total}`;
     }
 
-    function syncCoverUI() {
+    function syncCoverUI(instant = false) {
       const idx = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
       const mask = document.getElementById('cover-mask');
       const slot = document.getElementById('book-slot');
       const wrap = document.getElementById('flip-wrap');
       if (!mask || !slot || !wrap) return;
+
+      if (instant) slot.style.transition = 'none';
 
       if (idx === 0) {
         const canvas = document.querySelector('#book-slot .stf__canvas');
@@ -314,7 +316,7 @@
           mask.style.width  = (canvas.width  / 2) + 'px';
           mask.style.height = canvas.height + 'px';
         }
-        mask.style.display = 'block';
+        mask.style.display   = 'block';
         slot.style.transform = 'translateX(-25%)';
         wrap.style.overflow  = 'hidden';
       } else {
@@ -322,6 +324,19 @@
         slot.style.transform = '';
         wrap.style.overflow  = '';
       }
+
+      if (instant) requestAnimationFrame(() => { slot.style.transition = ''; });
+    }
+
+    // Called on user interaction so the slide starts in sync with the flip animation
+    function prepareFlip() {
+      if (!pageFlip || pageFlip.getCurrentPageIndex() !== 0) return;
+      const mask = document.getElementById('cover-mask');
+      const slot = document.getElementById('book-slot');
+      const wrap = document.getElementById('flip-wrap');
+      if (mask) mask.style.display   = 'none';
+      if (slot) slot.style.transform = '';
+      if (wrap) wrap.style.overflow  = '';
     }
 
     function loadBook(n) {
@@ -353,7 +368,7 @@
       });
 
       pageFlip.loadFromImages(getImages(n));
-      pageFlip.on('init', syncCoverUI);
+      pageFlip.on('init', () => syncCoverUI(true));
       pageFlip.on('flip', (e) => { updateCounter(e.data); syncCoverUI(); });
 
       // Update UI
@@ -364,11 +379,13 @@
       updateCounter(0);
     }
 
-    // Navigation
-    document.getElementById('btn-prev').addEventListener('click', () => pageFlip?.flipPrev());
-    document.getElementById('btn-next').addEventListener('click', () => pageFlip?.flipNext());
-    document.getElementById('zone-prev').addEventListener('click', () => pageFlip?.flipPrev());
-    document.getElementById('zone-next').addEventListener('click', () => pageFlip?.flipNext());
+    // Navigation — prepareFlip starts the slide in sync with the flip animation
+    document.getElementById('btn-prev').addEventListener('click', () => { prepareFlip(); pageFlip?.flipPrev(); });
+    document.getElementById('btn-next').addEventListener('click', () => { prepareFlip(); pageFlip?.flipNext(); });
+    document.getElementById('zone-prev').addEventListener('click', () => { prepareFlip(); pageFlip?.flipPrev(); });
+    document.getElementById('zone-next').addEventListener('click', () => { prepareFlip(); pageFlip?.flipNext(); });
+    // Catch direct page-edge clicks handled by the library itself
+    document.getElementById('book-slot').addEventListener('click', prepareFlip);
 
     // Keyboard arrows
     document.addEventListener('keydown', (e) => {
