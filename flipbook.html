@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Previews — Carlo Vencio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-VKJYESQDP5"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VKJYESQDP5');
+  </script>
+  <style>
+    body { background: var(--ink); }
+
+    /* ── Page header ── */
+    .fb-header {
+      background: rgba(26,21,18,0.95);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+    }
+    .fb-header .back-link { color: rgba(255,255,255,0.6); }
+    .fb-header .back-link:hover { color: var(--gold); }
+    .fb-header .back-link svg { stroke: currentColor; }
+    .fb-logo { font-family: var(--serif); font-size: 1.1rem; color: rgba(255,255,255,0.85); font-weight: 700; }
+    .fb-header-cta { padding: 8px 20px; font-size: 0.78rem; }
+
+    /* ── Book title ── */
+    .fb-title-bar {
+      text-align: center;
+      padding: 28px 24px 16px;
+    }
+    .fb-title-bar .section-label { color: var(--gold-light); }
+    .fb-title-bar h2 { color: var(--white); font-size: clamp(1.25rem, 3vw, 1.75rem); margin-bottom: 0; }
+
+    /* ── Book tabs ── */
+    .book-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 24px 24px;
+      flex-wrap: wrap;
+    }
+    .book-tab {
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      padding: 8px 18px;
+      border-radius: 100px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      background: transparent;
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .book-tab:hover { border-color: var(--gold); color: var(--gold); }
+    .book-tab.active { background: var(--gold); border-color: var(--gold); color: var(--white); }
+
+    /* ── Viewer stage ── */
+    .flip-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 24px 32px;
+    }
+
+    .flip-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 880px;
+    }
+
+    /* click zones for desktop */
+    .flip-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 15%;
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .flip-zone-prev { left: 0; justify-content: flex-start; padding-left: 8px; }
+    .flip-zone-next { right: 0; justify-content: flex-end; padding-right: 8px; }
+    .flip-zone svg { opacity: 0; transition: opacity 0.2s; }
+    .flip-wrap:hover .flip-zone svg { opacity: 1; }
+
+    #book-el {
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* loading state */
+    .flip-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.875rem;
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    /* ── Navigation bar ── */
+    .flip-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 20px 0 8px;
+    }
+
+    .flip-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1.5px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .flip-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--white); }
+    .flip-btn:disabled { opacity: 0.3; pointer-events: none; }
+
+    .page-counter {
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      min-width: 80px;
+      text-align: center;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Hint ── */
+    .flip-hint {
+      text-align: center;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.22);
+      letter-spacing: 0.08em;
+      font-weight: 500;
+      text-transform: uppercase;
+      padding: 8px 0 24px;
+    }
+
+    /* ── CTA strip ── */
+    .fb-cta {
+      background: rgba(255,255,255,0.04);
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .fb-cta p { color: rgba(255,255,255,0.45); font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+    .fb-cta h2 { color: var(--white); font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 16px; }
+    .fb-cta .sub { color: rgba(255,255,255,0.45); max-width: 400px; margin: 0 auto 28px; font-size: 0.9rem; line-height: 1.7; text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+    /* footer overrides for dark bg */
+    footer { background: rgba(0,0,0,0.3); border-top: 1px solid rgba(255,255,255,0.06); }
+    .footer-copy { color: rgba(255,255,255,0.25); }
+
+    @media (max-width: 640px) {
+      .book-tab { font-size: 0.72rem; padding: 7px 14px; }
+      .flip-zone { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="fb-header">
+    <a href="index.html" class="back-link" style="display:flex;align-items:center;gap:8px;font-size:0.875rem;font-weight:500;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Portfolio
+    </a>
+    <span class="fb-logo">Carlo Vencio</span>
+    <a href="index.html#contact" class="btn btn-primary fb-header-cta">Work With Me</a>
+  </header>
+
+  <!-- Title -->
+  <div class="fb-title-bar">
+    <span class="section-label centered">Book Preview</span>
+    <h2 id="book-title">Alen's Ocean Rescue Adventure</h2>
+  </div>
+
+  <!-- Book switcher -->
+  <div class="book-tabs">
+    <button class="book-tab active" data-book="1">Alen's Ocean Rescue Adventure</button>
+    <button class="book-tab" data-book="2">Name's Wild West Day</button>
+    <button class="book-tab" data-book="3">Pip and the Deep Blue Sea</button>
+  </div>
+
+  <!-- Viewer -->
+  <div class="flip-stage">
+    <div class="flip-wrap" id="flip-wrap">
+      <div class="flip-zone flip-zone-prev" id="zone-prev">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="13 8 9 12 13 16"/></svg>
+      </div>
+      <div id="book-el"></div>
+      <div class="flip-zone flip-zone-next" id="zone-next">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="11 8 15 12 11 16"/></svg>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flip-nav">
+      <button class="flip-btn" id="btn-prev">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        Prev
+      </button>
+      <span class="page-counter" id="page-counter">1 / 33</span>
+      <button class="flip-btn" id="btn-next">
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <p class="flip-hint">Click the page edge to turn &bull; Swipe on mobile</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="fb-cta">
+    <p>Like What You See?</p>
+    <h2 style="color:var(--white);">Let's Make Your Book</h2>
+    <p class="sub">From first draft to print-ready files, I handle every step of the production process.</p>
+    <a href="index.html#contact" class="btn btn-primary">Get in Touch</a>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-inner">
+      <span class="footer-logo">Carlo Vencio</span>
+      <p class="footer-copy">&copy; 2026 Carlo Vencio | Book Publishing Specialist | Cebu, Philippines</p>
+      <div class="footer-links">
+        <a href="index.html" style="color:rgba(255,255,255,0.45)">Home</a>
+        <a href="mailto:vencio.carlo25@gmail.com" style="color:rgba(255,255,255,0.45)">Email</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+  <script>
+    const bookData = {
+      1: { title: "Alen's Ocean Rescue Adventure", pages: 33, tag: "Children's Book" },
+      2: { title: "Name's Wild West Day",          pages: 33, tag: "Children's Book" },
+      3: { title: "Pip and the Deep Blue Sea",     pages: 23, tag: "Children's Book" }
+    };
+
+    let pageFlip = null;
+    let currentBook = 1;
+
+    function getImages(n) {
+      const { pages } = bookData[n];
+      return Array.from({ length: pages }, (_, i) =>
+        `books/book${n}/page${String(i + 1).padStart(2, '0')}.webp`
+      );
+    }
+
+    function calcSize() {
+      const wrap = document.getElementById('flip-wrap');
+      const maxW = Math.min(wrap.clientWidth, 880);
+      const mobile = window.innerWidth < 640;
+      const pageW = mobile ? maxW : Math.floor(maxW / 2);
+      return { pageW, pageH: pageW, mobile };
+    }
+
+    function updateCounter(idx) {
+      const total = bookData[currentBook].pages;
+      document.getElementById('page-counter').textContent = `${idx + 1} / ${total}`;
+    }
+
+    function loadBook(n) {
+      currentBook = n;
+      const el = document.getElementById('book-el');
+
+      if (pageFlip) { pageFlip.destroy(); pageFlip = null; }
+      el.innerHTML = '';
+
+      const { pageW, pageH, mobile } = calcSize();
+
+      pageFlip = new St.PageFlip(el, {
+        width:              pageW,
+        height:             pageH,
+        size:               'fixed',
+        showCover:          true,
+        usePortrait:        mobile,
+        startPage:          0,
+        drawShadow:         true,
+        flippingTime:       700,
+        maxShadowOpacity:   0.55,
+        mobileScrollSupport: false,
+        clickEventForward:  true,
+        swipeDistance:      30,
+        useMouseEvents:     true,
+      });
+
+      pageFlip.loadFromImages(getImages(n));
+      pageFlip.on('flip', (e) => updateCounter(e.data));
+
+      // Update UI
+      document.getElementById('book-title').textContent = bookData[n].title;
+      document.querySelectorAll('.book-tab').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.book) === n);
+      });
+      updateCounter(0);
+    }
+
+    // Navigation
+    document.getElementById('btn-prev').addEventListener('click', () => pageFlip?.flipPrev());
+    document.getElementById('btn-next').addEventListener('click', () => pageFlip?.flipNext());
+    document.getElementById('zone-prev').addEventListener('click', () => pageFlip?.flipPrev());
+    document.getElementById('zone-next').addEventListener('click', () => pageFlip?.flipNext());
+
+    // Keyboard arrows
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') pageFlip?.flipNext();
+      if (e.key === 'ArrowLeft')  pageFlip?.flipPrev();
+    });
+
+    // Book tabs
+    document.querySelectorAll('.book-tab').forEach(btn => {
+      btn.addEventListener('click', () => loadBook(parseInt(btn.dataset.book)));
+    });
+
+    // Check URL param: flipbook.html?book=2
+    const urlBook = parseInt(new URLSearchParams(location.search).get('book')) || 1;
+    loadBook(urlBook);
+
+    // Resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => loadBook(currentBook), 250);
+    });
+  </script>
+</body>
+</html>
