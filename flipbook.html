@@ -301,6 +301,22 @@
       document.getElementById('page-counter').textContent = `${idx + 1} / ${total}`;
     }
 
+    // Patch the flipbook canvas so the blank hard-cover page renders dark instead of white
+    function patchCanvasContext() {
+      const canvas = document.querySelector('#book-slot .stf__canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const _fillRect = ctx.fillRect.bind(ctx);
+      ctx.fillRect = function(x, y, w, h) {
+        const s = ctx.fillStyle;
+        const white = s === '#fff' || s === '#ffffff' || s === 'white' ||
+                      s === 'rgb(255, 255, 255)' || s === 'rgba(255, 255, 255, 1)';
+        if (white) ctx.fillStyle = '#1a1512';
+        _fillRect(x, y, w, h);
+        if (white) ctx.fillStyle = s;
+      };
+    }
+
     function syncCoverUI(instant = false) {
       const idx = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
       const mask = document.getElementById('cover-mask');
@@ -368,7 +384,7 @@
       });
 
       pageFlip.loadFromImages(getImages(n));
-      pageFlip.on('init', () => syncCoverUI(true));
+      pageFlip.on('init', () => { patchCanvasContext(); syncCoverUI(true); });
       pageFlip.on('flip', (e) => { updateCounter(e.data); syncCoverUI(); });
 
       // Update UI
