@@ -219,7 +219,7 @@
       <div class="flip-zone flip-zone-prev" id="zone-prev">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="13 8 9 12 13 16"/></svg>
       </div>
-      <div id="book-el"></div>
+      <div id="book-slot"><div id="book-el"></div></div>
       <div class="flip-zone flip-zone-next" id="zone-next">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><circle cx="12" cy="12" r="11" stroke="rgba(255,255,255,0.3)"/><polyline points="11 8 15 12 11 16"/></svg>
       </div>
@@ -279,9 +279,8 @@
     }
 
     function calcSize() {
-      const wrap = document.getElementById('flip-wrap');
-      const maxW = Math.min(wrap.clientWidth, 880);
       const mobile = window.innerWidth < 640;
+      const maxW = Math.min(window.innerWidth - 48, 880);
       const pageW = mobile ? maxW : Math.floor(maxW / 2);
       return { pageW, pageH: pageW, mobile };
     }
@@ -293,10 +292,13 @@
 
     function loadBook(n) {
       currentBook = n;
-      const el = document.getElementById('book-el');
 
-      if (pageFlip) { pageFlip.destroy(); pageFlip = null; }
-      el.innerHTML = '';
+      if (pageFlip) { try { pageFlip.destroy(); } catch(e) {} pageFlip = null; }
+
+      // Replace with a fresh element — reusing the same node after destroy() leaves residual state
+      const slot = document.getElementById('book-slot');
+      slot.innerHTML = '<div id="book-el"></div>';
+      const el = document.getElementById('book-el');
 
       const { pageW, pageH, mobile } = calcSize();
 
