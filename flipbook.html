@@ -304,7 +304,10 @@
     function syncCoverUI() {
       const idx = pageFlip ? pageFlip.getCurrentPageIndex() : 0;
       const mask = document.getElementById('cover-mask');
-      if (!mask) return;
+      const slot = document.getElementById('book-slot');
+      const wrap = document.getElementById('flip-wrap');
+      if (!mask || !slot || !wrap) return;
+
       if (idx === 0) {
         const canvas = document.querySelector('#book-slot .stf__canvas');
         if (canvas) {
@@ -312,8 +315,12 @@
           mask.style.height = canvas.height + 'px';
         }
         mask.style.display = 'block';
+        slot.style.transform = 'translateX(-25%)';
+        wrap.style.overflow  = 'hidden';
       } else {
-        mask.style.display = 'none';
+        mask.style.display   = 'none';
+        slot.style.transform = '';
+        wrap.style.overflow  = '';
       }
     }
 
